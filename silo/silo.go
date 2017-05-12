@@ -44,10 +44,10 @@ func main() {
 	initLogger(config.Silo.Loglevel)
 
 	// initialize redis connection
-	client, err := initRedisConnection()
+	redisClient, err := initRedisConnection()
 	if err != nil {
 		glogger.Debug.Println("redis conneciton cannot be made, trying again in 1 second")
-		client, err = initRedisConnection()
+		redisClient, err = initRedisConnection()
 		if err != nil {
 			glogger.Error.Println("redis connection cannot be made.")
 			os.Exit(1)
@@ -56,13 +56,16 @@ func main() {
 	glogger.Debug.Println("connection to redis succeeded.")
 	glogger.Info.Println("link to redis on", config.Redis.Host)
 
+	// populate redis with available packages
+	go populatePackages(config.Silo.Domain, config.Silo.BaseDir, redisClient)
+
 	// handle web requests/routes
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		//provision(w, r, client)
+		//provision(w, r, redisClient)
 	}).Methods("POST")
 	router.HandleFunc("/rkt/{fdata}", func(w http.ResponseWriter, r *http.Request) {
-		handlerdynamic(w, r, client)
+		handlerdynamic(w, r, redisClient)
 	}).Methods("GET")
 
 	if config.SSL.UseTLS {
@@ -119,12 +122,12 @@ func initRedisConnection() (*redis.Client, error) {
 	return redisClient, redisErr
 }
 
-func handlerdynamic(w http.ResponseWriter, r *http.Request, client *redis.Client) {
+func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	vars := mux.Vars(r)
 	fdata := vars["fdata"]
 
 	// see if the artifact exists
-	exists, err := client.SIsMember("master:packages", fdata).Result()
+	exists, err := redisClient.SIsMember("master:packages", fdata).Result()
 	if err != nil {
 		glogger.Error.Println("error getting result from master:packages")
 		glogger.Error.Println(err)

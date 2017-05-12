@@ -14,7 +14,8 @@ dependencies:
 
 run:
 	go run \
-		silo/silo.go
+		silo/silo.go \
+		silo/populate_packages.go
 
 stat:
 	mkdir -p bin/
@@ -30,6 +31,8 @@ populate_test:
 	mkdir -p rkt/binder/
 	wget -O rkt/binder/binder-latest-linux-amd64.aci https://cryo.unixvoid.com/bin/rkt/binder/standalone/binder-latest-linux-amd64.aci
 	wget -O rkt/binder/binder-latest-linux-amd64.aci.asc https://cryo.unixvoid.com/bin/rkt/binder/standalone/binder-latest-linux-amd64.aci.asc
+	mkdir -p rkt/pubkey/
+	wget -O rkt/pubkey/pubkey.gpg https://cryo.unixvoid.com/bin/rkt/pubkey/pubkeys.gpg
 
 clean:
 	rm -rf bin/
