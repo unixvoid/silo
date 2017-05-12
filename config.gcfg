@@ -1,0 +1,9 @@
+[silo]
+  loglevel    = "debug"
+  port        = 8080
+  domain      = "unixvoid.com"
+  basedir     = "rkt"
+
+[redis]
+  host        = "localhost:6379"
+  password    = ""
