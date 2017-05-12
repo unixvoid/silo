@@ -55,12 +55,10 @@ func populatePackages(domain, basedir string, redisClient *redis.Client) {
 }
 
 func generateMeta(wg *sync.WaitGroup, domain, pkg string, redisClient *redis.Client) {
-	//aciline := fmt.Sprintf("<meta name=\"ac-discovery\" content=\"%s/%s https://%s/rkt/%s/%s-{version}-{os}-{arch}.{ext}\">", domain, pkg, domain, pkg, pkg)
-	//pubkeyline := fmt.Sprintf("<meta name=\"ac-discovery-pubkeys\" content=\"%s/%s https://%s/rkt/pubkey/pubkeys.gpg\">", domain, pkg, domain)
-	//metaentry := fmt.Sprintf("%s\n%s", aciline, pubkeyline)
-
-	metaentry := fmt.Sprintf(`<meta name="ac-discovery" content="%s/%s https://%s/rkt/%s/%s-{version}-{os}-{arch}.{ext}">
-<meta name="ac-discovery-pubkeys" content="%s/%s https://%s/rkt/pubkey/pubkeys.gpg">`, domain, pkg, domain, pkg, pkg, domain, pkg, domain)
+	metaentry := fmt.Sprintf(``+
+		`<meta name="ac-discovery" content="%s/%s https://%s/rkt/%s/%s-{version}-{os}-{arch}.{ext}">`+"\n"+
+		`<meta name="ac-discovery-pubkeys" content="%s/%s https://%s/rkt/pubkey/pubkeys.gpg">`,
+		domain, pkg, domain, pkg, pkg, domain, pkg, domain)
 
 	glogger.Debug.Printf("adding meta line to 'package:%s'", pkg)
 	err := redisClient.Set(fmt.Sprintf("package:%s", pkg), metaentry, 0).Err()
