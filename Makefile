@@ -20,5 +20,19 @@ stat:
 	mkdir -p bin/
 	$(CGOR) $(GOC) $(GOFLAGS) -o bin/silo silo/*.go
 
+populate_test:
+	mkdir -p rkt/nsproxy/
+	wget -O rkt/nsproxy/nsproxy-latest-linux-amd64.aci https://cryo.unixvoid.com/bin/rkt/nsproxy/nsproxy-latest-linux-amd64.aci
+	wget -O rkt/nsproxy/nsproxy-latest-linux-amd64.aci.asc https://cryo.unixvoid.com/bin/rkt/nsproxy/nsproxy-latest-linux-amd64.aci.asc
+	mkdir -p rkt/cryodns/
+	wget -O rkt/cryodns/cryodns-latest-linux-amd64.aci https://cryo.unixvoid.com/bin/rkt/cryodns/cryodns-latest-linux-amd64.aci
+	wget -O rkt/cryodns/cryodns-latest-linux-amd64.aci.asc https://cryo.unixvoid.com/bin/rkt/cryodns/cryodns-latest-linux-amd64.aci.asc
+	mkdir -p rkt/binder/
+	wget -O rkt/binder/binder-latest-linux-amd64.aci https://cryo.unixvoid.com/bin/rkt/binder/standalone/binder-latest-linux-amd64.aci
+	wget -O rkt/binder/binder-latest-linux-amd64.aci.asc https://cryo.unixvoid.com/bin/rkt/binder/standalone/binder-latest-linux-amd64.aci.asc
+
 clean:
 	rm -rf bin/
+
+cleanall: clean
+	rm -rf rkt/
