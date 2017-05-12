@@ -69,8 +69,8 @@ func main() {
 	// handle web requests/routes
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		//provision(w, r, redisClient)
-	}).Methods("POST")
+		serveroot(w, r, redisClient)
+	}).Methods("GET")
 	router.HandleFunc("/rkt/{fdata}", func(w http.ResponseWriter, r *http.Request) {
 		handlerdynamic(w, r, redisClient)
 	}).Methods("GET")
@@ -129,6 +129,20 @@ func initRedisConnection() (*redis.Client, error) {
 	return redisClient, redisErr
 }
 
+func serveroot(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	// get metadata from redis
+	metadata, err := redisClient.Get("master:metadata").Result()
+	if err != nil {
+		glogger.Debug.Println("error getting master:metadata for root display")
+		glogger.Debug.Println(err)
+	}
+
+	// generate the html page
+	page := fmt.Sprintf("<html>\n<head>%s\n</head>\n<html>", metadata)
+	// serve metadata to client
+	fmt.Fprintf(w, page)
+}
+
 func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	vars := mux.Vars(r)
 	fdata := vars["fdata"]
@@ -142,8 +156,10 @@ func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 	if exists {
 		// serve up file
+		fmt.Fprintf(w, "file here :D")
 	} else {
 		glogger.Debug.Printf("data '%s' does not exist\n", fdata)
 		w.WriteHeader(http.StatusNotFound)
+		// TODO display file not found message
 	}
 }
