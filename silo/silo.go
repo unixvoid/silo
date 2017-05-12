@@ -27,8 +27,9 @@ type Config struct {
 		ServerKey  string
 	}
 	Redis struct {
-		Host     string
-		Password string
+		Host        string
+		Password    string
+		CleanOnBoot bool
 	}
 }
 
@@ -55,6 +56,12 @@ func main() {
 	}
 	glogger.Debug.Println("connection to redis succeeded.")
 	glogger.Info.Println("link to redis on", config.Redis.Host)
+
+	// clean redis on boot if its set in the config
+	if config.Redis.CleanOnBoot {
+		glogger.Debug.Println("cleaning redis")
+		redisClient.FlushAll()
+	}
 
 	// populate redis with available packages
 	go populatePackages(config.Silo.Domain, config.Silo.BaseDir, redisClient)

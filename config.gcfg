@@ -12,3 +12,4 @@
 [redis]
   host        = "localhost:6379"
   password    = ""
+  cleanonboot = true
