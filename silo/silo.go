@@ -1,10 +1,14 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 
+	"github.com/gorilla/mux"
 	"github.com/unixvoid/glogger"
 	"gopkg.in/gcfg.v1"
 	"gopkg.in/redis.v5"
@@ -16,6 +20,11 @@ type Config struct {
 		Port     int
 		Domain   string
 		BaseDir  string
+	}
+	SSL struct {
+		UseTLS     bool
+		ServerCert string
+		ServerKey  string
 	}
 	Redis struct {
 		Host     string
@@ -33,6 +42,48 @@ func main() {
 
 	// initialize the logger with the configured loglevel
 	initLogger(config.Silo.Loglevel)
+
+	// initialize redis connection
+	client, err := initRedisConnection()
+	if err != nil {
+		glogger.Debug.Println("redis conneciton cannot be made, trying again in 1 second")
+		client, err = initRedisConnection()
+		if err != nil {
+			glogger.Error.Println("redis connection cannot be made.")
+			os.Exit(1)
+		}
+	}
+	glogger.Debug.Println("connection to redis succeeded.")
+	glogger.Info.Println("link to redis on", config.Redis.Host)
+
+	// handle web requests/routes
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		//provision(w, r, client)
+	}).Methods("POST")
+	router.HandleFunc("/rkt/{fdata}", func(w http.ResponseWriter, r *http.Request) {
+		handlerdynamic(w, r, client)
+	}).Methods("GET")
+
+	if config.SSL.UseTLS {
+		tlsConfig := &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+			},
+			ClientSessionCache: tls.NewLRUClientSessionCache(128),
+		}
+		glogger.Info.Println("silo running https on", config.Silo.Port)
+		tlsServer := &http.Server{Addr: fmt.Sprintf(":%d", config.Silo.Port), Handler: router, TLSConfig: tlsConfig}
+		log.Fatal(tlsServer.ListenAndServeTLS(config.SSL.ServerCert, config.SSL.ServerKey))
+	} else {
+		glogger.Info.Println("silo running http on", config.Silo.Port)
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Silo.Port), router))
+	}
 }
 
 func readConf() {
@@ -66,4 +117,23 @@ func initRedisConnection() (*redis.Client, error) {
 
 	_, redisErr := redisClient.Ping().Result()
 	return redisClient, redisErr
+}
+
+func handlerdynamic(w http.ResponseWriter, r *http.Request, client *redis.Client) {
+	vars := mux.Vars(r)
+	fdata := vars["fdata"]
+
+	// see if the artifact exists
+	exists, err := client.SIsMember("master:packages", fdata).Result()
+	if err != nil {
+		glogger.Error.Println("error getting result from master:packages")
+		glogger.Error.Println(err)
+	}
+
+	if exists {
+		// serve up file
+	} else {
+		glogger.Debug.Printf("data '%s' does not exist\n", fdata)
+		w.WriteHeader(http.StatusNotFound)
+	}
 }

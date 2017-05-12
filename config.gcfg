@@ -4,6 +4,11 @@
   domain      = "unixvoid.com"
   basedir     = "rkt"
 
+[ssl]
+  usetls      = false
+  servercert  = deps/test.crt
+  serverkey   = deps/test.key
+
 [redis]
   host        = "localhost:6379"
   password    = ""
