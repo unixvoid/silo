@@ -71,9 +71,11 @@ func main() {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		serveroot(w, r, redisClient)
 	}).Methods("GET")
-	router.HandleFunc("/rkt/{fdata}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/rkt/{project}/{pkg}", func(w http.ResponseWriter, r *http.Request) {
 		handlerdynamic(w, r, redisClient)
 	}).Methods("GET")
+	// TODO make a default response of 404 if no other criteria exist
+	//   mux already handles it with a 404.. but maybe a nice message?
 
 	if config.SSL.UseTLS {
 		tlsConfig := &tls.Config{
@@ -145,10 +147,11 @@ func serveroot(w http.ResponseWriter, r *http.Request, redisClient *redis.Client
 
 func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	vars := mux.Vars(r)
-	fdata := vars["fdata"]
+	project := vars["project"]
+	pkg := vars["pkg"]
 
 	// see if the artifact exists
-	exists, err := redisClient.SIsMember("master:packages", fdata).Result()
+	exists, err := redisClient.SIsMember("master:packages", project).Result()
 	if err != nil {
 		glogger.Error.Println("error getting result from master:packages")
 		glogger.Error.Println(err)
@@ -156,9 +159,10 @@ func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 	if exists {
 		// serve up file
-		fmt.Fprintf(w, "file here :D")
+		servePackage(config.Silo.BaseDir, project, pkg, w, r)
+		//fmt.Fprintf(w, "file here :D %s:%s", project, pkg)
 	} else {
-		glogger.Debug.Printf("data '%s' does not exist\n", fdata)
+		glogger.Debug.Printf("data '%s' does not exist\n", project)
 		w.WriteHeader(http.StatusNotFound)
 		// TODO display file not found message
 	}

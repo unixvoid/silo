@@ -15,7 +15,8 @@ dependencies:
 run:
 	go run \
 		silo/silo.go \
-		silo/populate_packages.go
+		silo/populate_packages.go \
+		silo/serve_package.go
 
 stat:
 	mkdir -p bin/

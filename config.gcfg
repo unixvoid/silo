@@ -2,7 +2,7 @@
   loglevel    = "debug"
   port        = 8080
   domain      = "unixvoid.com"
-  basedir     = "rkt/"
+  basedir     = "rkt"
 
 [ssl]
   usetls      = false
