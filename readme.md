@@ -7,6 +7,11 @@ TODO
 - Check for filesystem changes to pick up new packages  
   this means updating master:metadata to for insertions/deletes
 
+- Set upstream and inject headers?  
+  many people are going to want the metadata injected on their websites home  
+  page.. this means we will have to run silo in front of their existing site  
+  and just inject the header metadata..
+
 ```
 rkt
 ├── binder
