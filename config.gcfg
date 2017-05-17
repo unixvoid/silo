@@ -1,8 +1,9 @@
 [silo]
   loglevel    = "debug"
   port        = 8080
-  domain      = "unixvoid.com"
+  domain      = "test.com"
   basedir     = "rkt"
+  proto       = "http"
 
 [ssl]
   usetls      = false

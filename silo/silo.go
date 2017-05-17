@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/unixvoid/glogger"
@@ -20,6 +21,7 @@ type Config struct {
 		Port     int
 		Domain   string
 		BaseDir  string
+		Proto    string
 	}
 	SSL struct {
 		UseTLS     bool
@@ -64,18 +66,22 @@ func main() {
 	}
 
 	// populate redis with available packages
-	go populatePackages(config.Silo.Domain, config.Silo.BaseDir, redisClient)
+	go populatePackages(config.Silo.Domain, config.Silo.BaseDir, config.Silo.Proto, redisClient)
 
 	// handle web requests/routes
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		glogger.Debug.Printf("routing: %s\n", r.RequestURI)
 		serveroot(w, r, redisClient)
 	}).Methods("GET")
 	router.HandleFunc("/rkt/{project}/{pkg}", func(w http.ResponseWriter, r *http.Request) {
+		glogger.Debug.Printf("routing: %s\n", r.RequestURI)
 		handlerdynamic(w, r, redisClient)
 	}).Methods("GET")
-	// TODO make a default response of 404 if no other criteria exist
-	//   mux already handles it with a 404.. but maybe a nice message?
+	router.HandleFunc("/{*}", func(w http.ResponseWriter, r *http.Request) {
+		glogger.Debug.Printf("routing: %s\n", r.RequestURI)
+		handlerwildcard(w, r, redisClient)
+	}).Methods("GET")
 
 	if config.SSL.UseTLS {
 		tlsConfig := &tls.Config{
@@ -85,6 +91,7 @@ func main() {
 			CipherSuites: []uint16{
 				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
 			},
 			ClientSessionCache: tls.NewLRUClientSessionCache(128),
@@ -165,5 +172,16 @@ func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		glogger.Debug.Printf("data '%s' does not exist\n", project)
 		w.WriteHeader(http.StatusNotFound)
 		// TODO display file not found message
+	}
+}
+
+func handlerwildcard(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	// TODO make a default response of 404 if no other criteria exist
+	//   mux already handles it with a 404.. but maybe a nice message?
+
+	if strings.Contains(r.RequestURI, "ac-discovery") {
+		serveroot(w, r, redisClient)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
