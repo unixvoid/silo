@@ -39,7 +39,7 @@ populate_test:
 prep_aci: stat
 	mkdir -p silo-layout/rootfs/deps/
 	cp deps/manifest.json silo-layout/manifest
-	cp bin/silo* silo-layout/rootfs/redns
+	cp bin/silo* silo-layout/rootfs/silo
 	cp config.gcfg silo-layout/rootfs/
 
 build_aci: prep_aci
