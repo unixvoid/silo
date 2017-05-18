@@ -1,17 +1,18 @@
 [silo]
-  loglevel    = "debug"
-  port        = 8080
-  content     = "test.com"
-  domain      = "test.com"
-  basedir     = "rkt"
-  proto       = "http"
+  loglevel        = "debug"
+  port            = 8080
+  content         = "test.com"
+  domain          = "test.com"
+  basedir         = "rkt"
+  proto           = "http"
+  bootstrapdelay  = 1
 
 [ssl]
-  usetls      = false
-  servercert  = deps/test.crt
-  serverkey   = deps/test.key
+  usetls          = false
+  servercert      = deps/test.crt
+  serverkey       = deps/test.key
 
 [redis]
-  host        = "localhost:6379"
-  password    = ""
-  cleanonboot = true
+  host            = "localhost:6379"
+  password        = ""
+  cleanonboot     = true

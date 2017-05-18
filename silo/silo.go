@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/unixvoid/glogger"
@@ -17,12 +18,13 @@ import (
 
 type Config struct {
 	Silo struct {
-		Loglevel string
-		Port     int
-		Content  string
-		Domain   string
-		BaseDir  string
-		Proto    string
+		Loglevel       string
+		Port           int
+		Content        string
+		Domain         string
+		BaseDir        string
+		Proto          string
+		BootstrapDelay time.Duration
 	}
 	SSL struct {
 		UseTLS     bool
@@ -50,7 +52,8 @@ func main() {
 	// initialize redis connection
 	redisClient, err := initRedisConnection()
 	if err != nil {
-		glogger.Debug.Println("redis conneciton cannot be made, trying again in 1 second")
+		glogger.Debug.Printf("redis conneciton cannot be made, trying again in %d seconds", config.Silo.BootstrapDelay)
+		time.Sleep(config.Silo.BootstrapDelay * time.Second)
 		redisClient, err = initRedisConnection()
 		if err != nil {
 			glogger.Error.Println("redis connection cannot be made.")
