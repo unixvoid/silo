@@ -1,6 +1,7 @@
 [silo]
   loglevel    = "debug"
   port        = 8080
+  content     = "test.com"
   domain      = "test.com"
   basedir     = "rkt"
   proto       = "http"
