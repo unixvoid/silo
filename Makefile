@@ -8,6 +8,7 @@ all: silo
 silo: run
 
 dependencies:
+	go get github.com/gorilla/mux
 	go get github.com/unixvoid/glogger
 	go get gopkg.in/gcfg.v1
 	go get gopkg.in/redis.v5
@@ -35,8 +36,28 @@ populate_test:
 	mkdir -p rkt/pubkey/
 	wget -O rkt/pubkey/pubkey.gpg https://cryo.unixvoid.com/bin/rkt/pubkey/pubkeys.gpg
 
+prep_aci: stat
+	mkdir -p silo-layout/rootfs/deps/
+	cp deps/manifest.json silo-layout/manifest
+	cp bin/silo* silo-layout/rootfs/redns
+	cp config.gcfg silo-layout/rootfs/
+
+build_aci: prep_aci
+	actool build silo-layout silo.aci
+	@echo "silo.aci built"
+
+build_travis_aci: prep_aci
+	wget https://github.com/appc/spec/releases/download/v0.8.7/appc-v0.8.7.tar.gz
+	tar -zxf appc-v0.8.7.tar.gz
+	# build image
+	appc-v0.8.7/actool build silo-layout silo.aci && \
+	rm -rf appc-v0.8.7*
+	@echo "silo.aci built"
+
 clean:
 	rm -rf bin/
+	rm -rf silo-layout/
+	rm -f silo.aci
 
 cleanall: clean
 	rm -rf rkt/
