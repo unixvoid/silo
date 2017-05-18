@@ -23,7 +23,6 @@ type Config struct {
 		Content        string
 		Domain         string
 		BaseDir        string
-		Proto          string
 		BootstrapDelay time.Duration
 	}
 	SSL struct {
@@ -70,7 +69,7 @@ func main() {
 	}
 
 	// populate redis with available packages
-	go populatePackages(config.Silo.Content, config.Silo.Domain, config.Silo.BaseDir, config.Silo.Proto, redisClient)
+	go populatePackages(config.Silo.Content, config.Silo.Domain, config.Silo.BaseDir, redisClient)
 
 	// handle web requests/routes
 	router := mux.NewRouter().StrictSlash(true)
