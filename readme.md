@@ -2,7 +2,6 @@ TODO
 ----
 - Check for filesystem changes to pick up new packages  
   this means updating master:metadata to for insertions/deletes  
-  - We need to figure out race condition/file locking if two packages get removed at once
 
 - Set upstream and inject headers?  
   many people are going to want the metadata injected on their websites home  
