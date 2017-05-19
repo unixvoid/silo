@@ -1,11 +1,8 @@
 TODO
 ----
-- On startup check the 'basedir'. We should populate the following structures with information  
-  master:packages (redis set) a set of package names in the directory  
-  package:<name>  (redis key) a key with the value being the meta tag to be used  
-
 - Check for filesystem changes to pick up new packages  
-  this means updating master:metadata to for insertions/deletes
+  this means updating master:metadata to for insertions/deletes  
+  - We need to figure out race condition/file locking if two packages get removed at once
 
 - Set upstream and inject headers?  
   many people are going to want the metadata injected on their websites home  
