@@ -6,6 +6,10 @@
   basedir         = "rkt"
   bootstrapdelay  = 1
 
+[livereload]
+  uselivereload   = true
+  polldelay       = 2
+
 [ssl]
   usetls          = false
   servercert      = deps/test.crt

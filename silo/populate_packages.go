@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sync"
+	"time"
 
 	"github.com/unixvoid/glogger"
 	"gopkg.in/redis.v5"
 )
 
-func populatePackages(content, domain, basedir string, redisClient *redis.Client) {
+func populatePackages(uselivereload bool, polldelay time.Duration, content, domain, basedir string, redisClient *redis.Client) {
 	dirs, _ := ioutil.ReadDir(basedir)
 	// make a wait group for concurrency
 	var wg sync.WaitGroup
@@ -52,6 +53,16 @@ func populatePackages(content, domain, basedir string, redisClient *redis.Client
 			glogger.Error.Println(err)
 		}
 	}
+
+	// we are done populating master:packages, run the filesystem watcher
+	// TODO eventually this function will die and it will only be the fswatcher diff
+	//   the diff will run first try and see that master:packages is empty and populate it
+	if uselivereload {
+		for {
+			go fsWatcher(basedir, redisClient)
+			time.Sleep(polldelay * time.Second)
+		}
+	}
 }
 
 func generateMeta(wg *sync.WaitGroup, content, domain, pkg string, redisClient *redis.Client) {
@@ -69,4 +80,57 @@ func generateMeta(wg *sync.WaitGroup, content, domain, pkg string, redisClient *
 
 	// decrement the wg counter
 	defer wg.Done()
+}
+
+func fsWatcher(basedir string, redisClient *redis.Client) {
+	// populate live:packages with fs footprint
+	//glogger.Debug.Printf("footprinting fs at '%s'\n", basedir)
+	dirs, _ := ioutil.ReadDir(basedir)
+
+	for _, d := range dirs {
+		// dont add 'pubkey', we are not indexing it
+		if d.Name() != "pubkey" {
+			//glogger.Debug.Printf("adding entry to 'live:packages' :: %s", d.Name())
+			err := redisClient.SAdd("live:packages", d.Name()).Err()
+			if err != nil {
+				glogger.Error.Printf("error adding entry '%s' to live:packages\n", d.Name())
+				glogger.Error.Println(err)
+			}
+		}
+	}
+	// call diff function to diff live:packages against master:packages
+	go packageDiff(redisClient)
+}
+
+func packageDiff(redisClient *redis.Client) {
+	// diff master:packages against live:packages
+
+	// diff for added packages
+	diffString, _ := redisClient.SDiff("live:packages", "master:packages").Result()
+	for _, b := range diffString {
+		glogger.Debug.Printf("adding entry to 'master:packages' :: %s", b)
+		err := redisClient.SAdd("master:packages", b).Err()
+		if err != nil {
+			glogger.Error.Printf("error adding entry '%s' to master:packages\n", b)
+			glogger.Error.Println(err)
+		} else {
+			// rebuild metadata
+		}
+	}
+
+	// diff for removed packages
+	diffString, _ = redisClient.SDiff("master:packages", "live:packages").Result()
+	for _, b := range diffString {
+		glogger.Debug.Printf("removing entry from 'master:packages' :: %s", b)
+		err := redisClient.SRem("master:packages", b).Err()
+		if err != nil {
+			glogger.Error.Printf("error removing entry '%s' from master:packages\n", b)
+			glogger.Error.Println(err)
+		} else {
+			// rebuild metadata
+		}
+	}
+
+	// done diffing, clear out live set
+	redisClient.Del("live:packages")
 }
