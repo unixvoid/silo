@@ -10,7 +10,7 @@ import (
 	"gopkg.in/redis.v5"
 )
 
-func populatePackages(uselivereload bool, polldelay time.Duration, content, domain, basedir string, redisClient *redis.Client) {
+func populatePackages(polldelay time.Duration, content, domain, basedir string, redisClient *redis.Client) {
 	dirs, _ := ioutil.ReadDir(basedir)
 	// make a wait group for concurrency
 	var wg sync.WaitGroup
@@ -57,11 +57,9 @@ func populatePackages(uselivereload bool, polldelay time.Duration, content, doma
 	// we are done populating master:packages, run the filesystem watcher
 	// TODO eventually this function will die and it will only be the fswatcher diff
 	//   the diff will run first try and see that master:packages is empty and populate it
-	if uselivereload {
-		for {
-			go fsWatcher(basedir, redisClient)
-			time.Sleep(polldelay * time.Second)
-		}
+	for {
+		go fsWatcher(basedir, redisClient)
+		time.Sleep(polldelay * time.Second)
 	}
 }
 

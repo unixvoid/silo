@@ -5,9 +5,6 @@
   domain          = "http://test.com"
   basedir         = "rkt"
   bootstrapdelay  = 1
-
-[livereload]
-  uselivereload   = true
   polldelay       = 2
 
 [ssl]

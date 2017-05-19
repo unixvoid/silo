@@ -24,10 +24,7 @@ type Config struct {
 		Domain         string
 		BaseDir        string
 		BootstrapDelay time.Duration
-	}
-	LiveReload struct {
-		UseLiveReload bool
-		PollDelay     time.Duration
+		PollDelay      time.Duration
 	}
 	SSL struct {
 		UseTLS     bool
@@ -73,7 +70,7 @@ func main() {
 	}
 
 	// populate redis with available packages
-	go populatePackages(config.LiveReload.UseLiveReload, config.LiveReload.PollDelay, config.Silo.Content, config.Silo.Domain, config.Silo.BaseDir, redisClient)
+	go populatePackages(config.Silo.PollDelay, config.Silo.Content, config.Silo.Domain, config.Silo.BaseDir, redisClient)
 
 	// handle web requests/routes
 	router := mux.NewRouter().StrictSlash(true)
