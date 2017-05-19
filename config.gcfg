@@ -1,7 +1,7 @@
 [silo]
   loglevel        = "debug"
   port            = 8080
-  content         = "http://test.com"
+  content         = "test.com"
   domain          = "http://test.com"
   basedir         = "rkt"
   bootstrapdelay  = 1
