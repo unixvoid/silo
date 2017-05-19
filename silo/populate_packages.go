@@ -135,7 +135,7 @@ func packageDiff(content, domain string, redisClient *redis.Client) {
 			// remove package:<package>
 			redisClient.Del(fmt.Sprintf("package:%s", b))
 			// rebuild master:metadata
-			go rebuildMeta(redisClient)
+			rebuildMeta(redisClient)
 		}
 	}
 
