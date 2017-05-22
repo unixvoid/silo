@@ -1,0 +1,15 @@
+[Unit]
+Description=silo rkt repo
+
+[Service]
+ExecStart=/usr/bin/rkt run \
+	--port=web:8080 \
+	--volume conf,kind=host,source=/silo/conf/config.gcfg \
+	--volume data,kind=host,source=/binder/binderdata/rkt \
+	unixvoid.com/silo --mount volume=conf,target=/config.gcfg --mount volume=data,target=/rkt \
+	unixvoid.com/redis
+
+[Install]
+WantedBy=multi-user.target
+
+KillMode=mixed

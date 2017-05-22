@@ -35,3 +35,16 @@ package:nsproxy  ::
   <meta name="ac-discovery" content="unixvoid.com/nsproxy https://unixvoid.com/rkt/nsproxy/nsproxy-{version}-{os}-{arch}.{ext}"> 
   <meta name="ac-discovery-pubkeys" content="unixvoid.com/nsproxy https://unixvoid.com/rkt/pubkey/pubkeys.gpg"> 
 ```
+
+
+Nginx config
+------------
+The easiest way to configure silo with your existing infrastructure is to test
+for clients looking for the `ac-discovery` url.  I use the following bit in my
+nginx configs to achieve this:  
+
+```
+if ($request_uri ~ .*ac-discovery.*) {
+	return 301 https://drone.unixvoid.com$request_uri;
+}
+```
