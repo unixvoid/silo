@@ -151,7 +151,7 @@ func serveroot(w http.ResponseWriter, r *http.Request, redisClient *redis.Client
 	}
 
 	// generate the html page
-	page := fmt.Sprintf("<html>\n<head>%s\n</head>\n<html>", metadata)
+	page := fmt.Sprintf("<html>\n<head>%s\n</head>\n</html>", metadata)
 	// serve metadata to client
 	fmt.Fprintf(w, page)
 }
