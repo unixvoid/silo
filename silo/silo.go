@@ -151,7 +151,7 @@ func serveroot(w http.ResponseWriter, r *http.Request, redisClient *redis.Client
 	}
 
 	// generate the html page
-	page := fmt.Sprintf("<html>\n<head>%s\n</head>\n<html>", metadata)
+	page := fmt.Sprintf("<html>\n<head>%s\n</head>\n</html>", metadata)
 	// serve metadata to client
 	fmt.Fprintf(w, page)
 }
@@ -160,6 +160,12 @@ func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	vars := mux.Vars(r)
 	project := vars["project"]
 	pkg := vars["pkg"]
+
+	// TODO
+	// if the request is for the public key, serve it
+	if project == "pubkey" {
+		servePackage(config.Silo.BaseDir, project, "pubkeys.gpg", w, r)
+	}
 
 	// see if the artifact exists
 	exists, err := redisClient.SIsMember("master:packages", project).Result()
