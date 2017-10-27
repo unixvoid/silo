@@ -13,14 +13,15 @@ There are two main ways to run silo:
 
 1. **ACI/rkt**: ironically we can run silo as an aci image. We have public rkt images
 hosted on the site! check them out [here](https://cryo.unixvoid.com/bin/rkt/silo/) or
-give us a fetch for 64bit machines!
-`rkt fetch unixvoid.com/silo`. This image can be run with rkt manually or you can grab
+give us a fetch for 64bit machines!  
+`rkt fetch unixvoid.com/silo`.   
+This image can be run with rkt manually or you can grab
 our handy [service file](https://github.com/unixvoid/silo/blob/master/deps/silo.service)
 
-2. **From Source**: Are we not compiled for your architecture? Wanna hack on the source?
-Lets build and deploy:
-`make dependencies`
-`make run`
+2. **From Source**: Are we not compiled for your architecture? Wanna hack on the source?  
+Lets build and deploy:  
+`make dependencies`  
+`make run`  
 If you want to build an ACI use: `make build_aci`
 
 ## Configuration
@@ -37,14 +38,14 @@ config file and break it down.
   polldelay       = 2                  # delay in seconds between filesystem polling times (how fast silo will update its images)
 
 [ssl]
-  usetls          = false              # weather or not to run with ssl
+  usetls          = false              # whether or not to run with ssl
   servercert      = deps/test.crt      # path to server cert (if usetls is enabled)
   serverkey       = deps/test.key      # path to server key (if usetls is enabled)
 
 [redis]
   host            = "localhost:6379"   # host and port where redis is listening
   password        = ""                 # password to redis database
-  cleanonboot     = true               # weather or not to clean out redis db on boot (useful if silo is the only thing running in the db)
+  cleanonboot     = true               # whether or not to clean out redis db on boot (useful if silo is the only thing running in the db)
 ```
 
 The most crucial part of this configuration is the `content` and `domain` sections.
@@ -62,10 +63,10 @@ Here is a snippet of what `https://unixvoid.com?ac-discovery=1` produces:
 <meta name="ac-discovery" content="unixvoid.com/nginx https://cryo.unixvoid.com/bin/rkt/nginx/nginx-{version}-{os}-{arch}.{ext}">
 <meta name="ac-discovery-pubkeys" content="unixvoid.com/nginx https://cryo.unixvoid.com/bin/rkt/pubkey/pubkeys.gpg">
 ```
-Silo is serving up the images from `cryo.unixvoid.com/bin` even though the images
-are named as `unixvoid.com`  
+Here we can see that silo is serving up the images from `cryo.unixvoid.com/bin` 
+even though the images are named as `unixvoid.com`  
 If you have any problems setting this up, it may be wise to see how ac-discovery
-actually works over on the [appc discovery readme](https://github.com/appc/spec/blob/master/spec/discovery.md))
+actually works over on the [appc discovery readme](https://github.com/appc/spec/blob/master/spec/discovery.md)  
 If you are running this in conjunction with nginx go read the nginx section for
 upsteam settings in the config
 
