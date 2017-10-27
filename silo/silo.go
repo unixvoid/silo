@@ -161,6 +161,12 @@ func handlerdynamic(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	project := vars["project"]
 	pkg := vars["pkg"]
 
+	// TODO
+	// if the request is for the public key, serve it
+	if project == "pubkey" {
+		servePackage(config.Silo.BaseDir, project, "pubkeys.gpg", w, r)
+	}
+
 	// see if the artifact exists
 	exists, err := redisClient.SIsMember("master:packages", project).Result()
 	if err != nil {
